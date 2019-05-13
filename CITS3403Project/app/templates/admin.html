@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+
+
+<div class="info">
+<h1>Welcome Admin! {{current_user}}</h1>
+<hr>
+
+<table class="table table-condensed">
+    <tr>
+        <th class="success">UserId</th>
+        <th class="success">Admin</th>
+        <th class="success">UserName</th>
+        <th class="success">Email</th>
+        <th class="success">Preference</th>
+
+    </tr>
+    <tr>
+            {% for user in users %}
+            <tr>
+                <td class="active">{{user.id}}</td>
+                <td class="active">{{user.admin}}</td>
+                <td class="active">{{user.username}}</td>
+                <td  class="active">{{user.email}}</td>
+                <td  class="active">{{user.preference}}</td>
+
+                <form action="{{url_for('delete_user', id=user.id )}}" method="post" >
+                <td><button type="submit"  class="btn btn-danger" value="Delete" >Delete</button></td>
+                </form>
+            </tr>
+            {% endfor %}
+    </tr>
+</table>
+
+</div>
+
+
+{% endblock %}
