@@ -26,7 +26,9 @@ def index():
     for i in db.session.query(Choice.chooseSeries).all():
         carVote[i[0]] = carVote.get(i[0], 0) + 1
 
+
     flash("Voting result " + str(carVote))
+    carValue = carVote.values()
 
     user = []
     for i in db.session.query(Choice.UserId).all():
@@ -59,7 +61,7 @@ def index():
     # flash(tableVote)
     a = zip(tableUser,tableCar,tableVote)
 
-    return render_template('index.html',title='Home', car1=car1, carVote = carVote, choice=choice, a=a)
+    return render_template('index.html',title='Home', car1=car1, carVote = carVote, choice=choice, a=a, carValue=carValue)
 
 
 @app.route("/select" , methods=['GET', 'POST'])
