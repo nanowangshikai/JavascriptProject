@@ -44,7 +44,7 @@ header nav ul li a{
 }
 
 
-header nav ul li a:hover, header nav ul li a.active{
+header nav ul li a:hover{
     color: aliceblue;
     background: rgb(72, 202, 202);
 }
@@ -178,9 +178,10 @@ header nav ul li a:hover, header nav ul li a.active{
 
 footer{
     background: black;
-    position: relative;
-    margin-top: 1000px;
-    height: 60px;
+    clear: both;
+    position: fixed;
+    bottom: 0;
+    height: 40px;
     width: 100%;
     color: white;
     text-align: center;

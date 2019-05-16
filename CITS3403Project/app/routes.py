@@ -94,10 +94,11 @@ admin.add_view(ModelView(Record, db.session))
 @app.route('/hoster')
 @login_required
 def hoster():
-
     users = User.query.all()
 
-    return render_template('admin.html', users=users)
+    choose = db.session.query(Choice).join(User)
+
+    return render_template('admin.html', users=users, choose=choose)
 
 @app.route('/delete_user/<string:id>', methods=['GET', 'POST'])
 @login_required
@@ -108,7 +109,7 @@ def delete_user(id):
     #     abort(403)
     db.session.delete(user)
     db.session.commit()
-    flash('One user has been deleted!')
+    flash('One row has been deleted!')
 
     return redirect(url_for('hoster'))
 

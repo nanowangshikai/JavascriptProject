@@ -7,6 +7,7 @@
 <hr>
 
 <table class="table table-condensed">
+        <caption style="text-align: center"><h1>User Information</h1></caption>
     <tr>
         <th class="success">UserId</th>
         <th class="success">Admin</th>
@@ -15,7 +16,7 @@
         <th class="success">Preference</th>
 
     </tr>
-    <tr>
+    <tr> 
             {% for user in users %}
             <tr>
                 <td class="active">{{user.id}}</td>
@@ -25,6 +26,30 @@
                 <td  class="active">{{user.preference}}</td>
 
                 <form action="{{url_for('delete_user', id=user.id )}}" method="post" >
+                <td><button type="submit"  class="btn btn-danger" value="Delete" >Delete</button></td>
+                </form>
+            </tr>
+            {% endfor %}
+    </tr>
+</table>
+
+<table class="table table-condensed">
+    <caption style="text-align: center"><h1>User Voting List</h1></caption>
+    <tr>
+        <th class="success">List</th>
+        <th class="success">car</th>
+        <th class="success">vote</th>
+
+    </tr>
+    <tr> 
+            {% for c in choose %}
+            <tr>
+                <td class="active">{{c.UserId}}</td>
+                <td class="active">{{c.chooseSeries}}</td>
+                <td class="active">{{c.vote}}</td>
+
+
+                <form action="{{url_for('delete_user', id=c.UserId )}}" method="post" >
                 <td><button type="submit"  class="btn btn-danger" value="Delete" >Delete</button></td>
                 </form>
             </tr>
