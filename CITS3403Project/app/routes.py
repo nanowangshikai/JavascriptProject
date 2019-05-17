@@ -33,16 +33,20 @@ def index():
     user = []
     for i in db.session.query(Choice.UserId).all():
         user.append(i[0])
-
-    for i in user:
-        if current_user.id in user:
-            choice = Choice(chooseSeries=select, UserId = current_user.id, vote=1) 
-            flash("current user have voted")
-            break
-        else:
-            flash("not voted yet")
-            choice = Choice(chooseSeries=select, UserId = current_user.id, vote=0) 
-            break
+    
+    if len(user) > 0:
+        for i in user:
+            if current_user.id in user:
+                choice = Choice(chooseSeries=select, UserId = current_user.id, vote=1) 
+                flash("current user have voted")
+                break
+            else:
+                flash("not voted yet")
+                choice = Choice(chooseSeries=select, UserId = current_user.id, vote=0) 
+                break
+    else:
+        flash('not voted yet')
+        choice = Choice(chooseSeries=select, UserId = current_user.id, vote=0)
 
     tableCar=[]
     tableVote=[]
