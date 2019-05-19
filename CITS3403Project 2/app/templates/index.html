@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <form method="POST" action="{{ url_for('select') }}">
+    <div class="info">
+        <h1>Hello, {{current_user.username}}!</h1>
+        <p>Pick your favourite car series and voting right now!</p>
+        <br>
+
+        <!-- {% for i in car1 %}
+        <button type="button" class="btn btn-primary btn-lg btn-block" onclick="event()">{{i}}</button>
+        {% endfor %} -->
+        
+
+        <div >
+            <div >
+                <span  class='btn btn-default btn-lg btn-block'>Please select Below</span>
+                <br/>
+                <br>
+                    <select name="car_select" class="selectpicker show-tick btn btn-info btn-lg btn-block">
+                        {% for i in car1 %}
+                            <option>{{i}}</option>
+                        {% endfor %}    
+                    </select>
+
+            </div>
+            <br><br>
+            
+            {% if choice.vote == 1 %}
+            <button type="submit" class="btn btn-default btn-lg btn-block" disabled >You have already Voted</button>
+            {% else %}
+            <button type="submit" class="btn btn-default btn-lg btn-block" onclick="time()">Vote</button>
+            
+            {% endif %}
+            
+        </div>
+
+        <hr>
+
+        <canvas id="myChart" width="400" height="400"></canvas>
+        <script>
+        Chart.defaults.global.legend.display = false;
+
+        var charData = {
+
+                labels: [{% for i in carname %}
+                         "{{i}}",
+                        {% endfor %}],
+                datasets: [{
+                    data: [{% for i in carValue %}
+                        "{{i}}",
+                        {% endfor %}],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+                }],
+                options:{
+                    scales: {
+                    yAxes: [{
+                        display:true,
+                        ticks: {
+                            precision:0
+
+                        }
+                    }]
+                }
+            }
+        }
+            
+
+        var ctx = document.getElementById('myChart');
+        var myChart = new Chart(ctx, {
+            type: 'bar',
+            data: charData,
+
+        });
+        </script>
+
+
+
+
+        <table class="table">
+            <caption style="text-align: center" ><h1>User Voting List</h1></caption>
+            <hr>
+        <thread>
+            <th class="danger">USER</th>
+            <th class="danger">CAR</th>
+            <th class="danger">VOTE</th>
+        </thread>
+        
+        <tbody>
+            {% for i,j,k in a %}
+             <tr>
+                 <td class="active">{{i}}</td>
+                 <td class="success">{{j}}</td>
+                 <td class="warning">{{k}}</td>
+             </tr>
+            {% endfor %}
+
+        </tbody>
+        </table>
+
+
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    </div>
+    </form>
+
+
+{% endblock %}
