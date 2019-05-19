@@ -117,12 +117,39 @@ def hoster():
 
         choose = db.session.query(Choice).join(User)
         name = db.session.query(User).join(Choice)
+        brand = db.session.query(Brand)
 
-        return render_template('admin.html', users=users, choose=choose, name=name)
+        return render_template('admin.html', users=users, choose=choose, name=name, brand=brand)
     
     else:
         flash("Can't not access admin page directly")
         return redirect(url_for('index'))
+
+@app.route('/addCar', methods=['POST'])
+@login_required
+def addVote():
+    if request.method == "POST":
+
+        result = request.form
+        carname = result['text']
+
+        addCar = Brand(carSeries=carname)
+
+        db.session.add(addCar)
+        db.session.commit()
+
+        flash("car added successful: " + str(carname))
+        return redirect(url_for('hoster'))
+
+@app.route('/delete_brand/<string:id>', methods=['GET', 'POST'])
+@login_required
+def delete_brand(id):
+
+    deleteCar = Brand.query.get_or_404(id)
+    db.session.delete(deleteCar)
+    db.session.commit()
+    flash('One car has been deleted')
+    return redirect(url_for('hoster'))
 
 
 @app.route('/delete_user/<string:id>', methods=['GET', 'POST'])
@@ -130,11 +157,23 @@ def hoster():
 def delete_user(id):
     
     user = User.query.get_or_404(id)
-
+    # createNewCar = Brand(carSeries=createCar)
+    # db.session.add(createNewCar)
     db.session.delete(user)
     db.session.commit()
-    flash('One row has been deleted!')
+    flash('One User has been deleted!')
+    return redirect(url_for('hoster'))
 
+@app.route('/delete_vote/<string:id>', methods=['GET', 'POST'])
+@login_required
+def delete_vote(id):
+    
+    user = Choice.query.get_or_404(id)
+    # createNewCar = Brand(carSeries=createCar)
+    # db.session.add(createNewCar)
+    db.session.delete(user)
+    db.session.commit()
+    flash('One Vote has been deleted!')
     return redirect(url_for('hoster'))
 
 

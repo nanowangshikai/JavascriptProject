@@ -30,3 +30,22 @@ function createVote(){
         x.style.display = "none";
     }
 }
+
+function createVote(){
+    var x = document.getElementById("vote");
+    
+    if (x.style.display == "none"){
+        x.style.display = "block";
+    }else{
+        x.style.display = "none";
+    }
+}
+
+function showCarList(){
+    var x = document.getElementById("carList")
+    if(x.style.display=="none"){
+        x.style.display = "block";
+    }else{
+        x.style.display = "none"
+    }
+}

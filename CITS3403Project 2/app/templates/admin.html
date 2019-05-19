@@ -6,17 +6,39 @@
 <h1>Welcome Admin! {{current_user}}</h1>
 <hr>
 
-<button onclick="createVote()">Creat Vote</button>
-<div id="vote" >
-<p1>Please input the car name</p1>
+<button onclick="createVote()" class="btn btn-info">Creat Vote</button>
+<button onclick="showCarList()" class="btn btn-warning">SuperCar List</button>
+<div id="carList">
+    <table class="table table-bordered">
+    <tr>
+    </tr>
+{% for i in brand %}
+<tr>
+    <td class="active">{{i.id}}</td>
+    <td class="active">{{i.carSeries}}</td>
+    <form action="{{url_for('delete_brand', id=i.id ) }}" method="post" >
 
-<input name="text">
-<input type="submit">
-
+    <td><button type="submit"  class="btn btn-danger" value="Delete">Delete</button></td>
+    </form>
+</tr>
+{% endfor %}
+    </table>
 </div>
 
+
+
+<div id="vote" >
+<h4>Please input the car name below</h4>
+<br>
+<form action="{{url_for('addVote')}}" method="POST">
+<input name="text" value="type car name">
+<input type="submit" class="btn btn-success" value="Add">
+</form>
+</div>
+
+
 <table class="table table-condensed">
-        <caption style="text-align: center"><h1>User Information</h1></caption>
+        <caption style="text-align: center"><h1 class="text-success">User Information</h1></caption>
     <tr>
         <th class="success">UserId</th>
         <th class="success">Admin</th>
@@ -40,15 +62,19 @@
                 {% else %}
                 <td><button type="submit"  class="btn btn-danger" value="Delete" >Delete</button></td>
                 {% endif %}
-            </form>
+                </form>
             </tr>
             {% endfor %}
     </tr>
 </table>
 
+<br>
+<hr>
+
 <table class="table table-condensed">
-    <caption style="text-align: center"><h1>User Voting List</h1></caption>
+    <caption style="text-align: center"><h1 class="text-success">User Voting List</h1></caption>
     <tr>
+        <th class="success">UserId</th>
         <th class="success">VoteId</th>
         <th class="success">Name</th>
         <th class="success">car</th>
@@ -59,12 +85,13 @@
             {% for c in choose %}
             <tr>
                 <td class="active">{{c.UserId}}</td>
+                <td class="active">{{c.id}}</td>
                 <td class="active">{{c.user.username}}</td>
                 <td class="active">{{c.chooseSeries}}</td>
                 <td class="active">{{c.vote}}</td>
 
 
-                <form action="{{url_for('delete_user', id=c.UserId )}}" method="post" >
+                <form action="{{url_for('delete_vote', id=c.id )}}" method="post" >
                 {% if c.user.admin==True %}
                 <td><button type="submit"  class="btn btn-danger" value="Delete" disabled>Delete</button></td>
                 {% else %}

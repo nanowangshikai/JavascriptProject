@@ -194,6 +194,6 @@ footer{
     top: 10px;
 }
 
-#vote{
+#vote, #carList{
     display: none;
 }
