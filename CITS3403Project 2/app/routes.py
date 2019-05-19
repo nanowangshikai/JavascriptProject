@@ -11,63 +11,73 @@ from flask_admin.contrib.sqla import ModelView
 @app.route('/')
 @app.route('/home')
 def home():
+    
+
+
     return render_template('home.html')
 
 
 @app.route('/index')
 @login_required
 def index():
-    car1 = []
-    for i in db.session.query(Brand.carSeries).all():
-        car1.append(i[0])
+    if current_user.admin == False:
 
-    carVote = {}
+        car1 = []
+        for i in db.session.query(Brand.carSeries).all():
+            car1.append(i[0])
 
-    for i in db.session.query(Choice.chooseSeries).all():
-        carVote[i[0]] = carVote.get(i[0], 0) + 1
+        carVote = {}
+        carname = []
+        carValue = []
 
+        for i in db.session.query(Choice.chooseSeries).all():
+            carVote[i[0]] = carVote.get(i[0], 0) + 1
+        sortCarVote = sorted(carVote, key=carVote.get, reverse=True)
+        for i in sortCarVote:
+            carname.append(i)
+            carValue.append(carVote[i])
 
-    flash("Voting result " + str(carVote))
-    
-    carname = carVote.keys()
-    carValue = carVote.values()
+        flash("Voting result " + str(carVote))
 
-
-
-    user = []
-    for i in db.session.query(Choice.UserId).all():
-        user.append(i[0])
-    
-
-    for i in user:
-        if current_user.id in user:
-            choice = Choice(chooseSeries=select, UserId = current_user.id, vote=1) 
-            flash("current user have voted")
-            break
+        user = []
+        for i in db.session.query(Choice.UserId).all():
+            user.append(i[0])
+        
+        if len(user) > 0:
+            for i in user:
+                if current_user.id in user:
+                    choice = Choice(chooseSeries=select, UserId = current_user.id, vote=1) 
+                    flash("current user have voted")
+                    break
+                else:
+                    flash("not voted yet")
+                    choice = Choice(chooseSeries=select, UserId = current_user.id, vote=0) 
+                    break
         else:
             flash("not voted yet")
-            choice = Choice(chooseSeries=select, UserId = current_user.id, vote=0) 
-            break
+            choice = Choice(chooseSeries=select, UserId = current_user.id, vote=0)
 
-    tableCar=[]
-    tableVote=[]
-    for i in db.session.query(Choice.chooseSeries).all():
-        tableCar.append(i[0])
+        tableCar=[]
+        tableVote=[]
+        for i in db.session.query(Choice.chooseSeries).all():
+            tableCar.append(i[0])
 
-    for i in db.session.query(Choice.vote).all():
-        tableVote.append(i[0])
+        for i in db.session.query(Choice.vote).all():
+            tableVote.append(i[0])
 
-    tableUser = []
-    for i in db.session.query(User).join(Choice):
-        tableUser.append(i)
+        tableUser = []
+        for i in db.session.query(User).join(Choice):
+            tableUser.append(i)
 
-    # flash(tableUser)
-    # flash(tableCar)
-    # flash(tableVote)
-    a = zip(tableUser,tableCar,tableVote)
+        # flash(tableUser)
+        # flash(tableCar)
+        # flash(tableVote)
+        a = zip(tableUser,tableCar,tableVote)
 
-    return render_template('index.html',title='Home', car1=car1, carVote = carVote, choice=choice, a=a, carname=carname,carValue=carValue)
-
+        return render_template('index.html',title='Home', a=a, car1=car1, carVote = carVote, choice=choice, carname=carname,carValue=carValue)
+    else:
+        flash("You are admin!")
+        return redirect(url_for('hoster'))
 
 @app.route("/select" , methods=['GET', 'POST'])
 def select():
@@ -101,20 +111,26 @@ admin.add_view(ModelView(Record, db.session))
 @app.route('/hoster')
 @login_required
 def hoster():
-    users = User.query.all()
 
-    choose = db.session.query(Choice).join(User)
-    name = db.session.query(User).join(Choice)
+    if current_user.admin == True: 
+        users = User.query.all()
 
-    return render_template('admin.html', users=users, choose=choose, name=name)
+        choose = db.session.query(Choice).join(User)
+        name = db.session.query(User).join(Choice)
+
+        return render_template('admin.html', users=users, choose=choose, name=name)
+    
+    else:
+        flash("Can't not access admin page directly")
+        return redirect(url_for('index'))
+
 
 @app.route('/delete_user/<string:id>', methods=['GET', 'POST'])
 @login_required
 def delete_user(id):
     
     user = User.query.get_or_404(id)
-    if user.username != current_user:
-        abort(403)
+
     db.session.delete(user)
     db.session.commit()
     flash('One row has been deleted!')
@@ -128,7 +144,7 @@ def login():
         if User.is_admin(current_user):
             return redirect(url_for('hoster'))
         else:
-	        return redirect(url_for('select'))
+	        return redirect(url_for('index'))
     
     form = LoginForm()
     if form.validate_on_submit():
@@ -147,8 +163,9 @@ def login():
 
 @app.route('/logout')
 def logout():
-	logout_user()
-	return redirect(url_for('index'))
+    logout_user()
+    flash("Logged Out")
+    return redirect(url_for('index'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():

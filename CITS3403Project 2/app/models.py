@@ -27,7 +27,7 @@ class User(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
     def __repr__(self):
-        print('<admin or not {}>'.format(self.admin))
+
         return '{}'.format(self.username)
 
 class Brand(db.Model):
