@@ -79,9 +79,8 @@ def index():
         flash("You are admin!")
         return redirect(url_for('hoster'))
 
-@app.route("/select" , methods=['GET', 'POST'])
-def select():
-    select = request.form.get('car_select')
+@app.route("/select/<string:carname>" , methods=['GET', 'POST'])
+def select(carname):
 
     user = []
     for i in db.session.query(Choice.UserId).all():
@@ -89,14 +88,19 @@ def select():
 
     for i in user:
         if current_user.id in user:
-            return render_template('vote.html', select=select)
+            flash(carname)
+            return render_template('vote.html', select=carname)
+            
         else:
-            choice = Choice(chooseSeries=select, UserId = current_user.id, vote=1) 
+            choice = Choice(chooseSeries=carname, UserId = current_user.id, vote=1) 
             db.session.add(choice)
             db.session.commit()
-            flash("Voted:" + str(select))
+            flash("Voted:" + str(carname))
 
-            return render_template('vote.html', select=select, choice=choice)
+            flash(carname)
+            return render_template('vote.html', select=carname, choice=choice)
+
+
 
 
 if __name__ == "__main__":
