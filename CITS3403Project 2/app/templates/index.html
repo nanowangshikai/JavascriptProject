@@ -23,13 +23,13 @@
                         {% for i in car1 %}
                         <tr>
                             
-                            <td type="button">{{i}}</td>
+                            <td type="button" class="">{{i}}</td>
                             <form method="POST" action="{{ url_for('select', carname=i) }}">
 
                             {% if choice.vote == 1 %}
-                            <td><button disabled>Vote</button></td>
+                            <td><button disabled class="btn btn-success">Already Vote</button></td>
                             {% else %}
-                            <td><button>Vote</button></td>
+                            <td><button class="btn btn-success">Vote</button></td>
                             {% endif %}
                             </form>
                         </tr>
@@ -38,9 +38,10 @@
 
 
             </div>
-            <br><br>
             
         </div>
+
+        <br>
 
         <hr>
         <canvas id="myChart" width="400" height="400"></canvas>

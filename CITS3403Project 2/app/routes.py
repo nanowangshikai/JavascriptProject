@@ -97,7 +97,6 @@ def select(carname):
             db.session.commit()
             flash("Voted:" + str(carname))
 
-            flash(carname)
             return render_template('vote.html', select=carname, choice=choice)
 
 
