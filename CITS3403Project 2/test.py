@@ -49,8 +49,17 @@ class TestCase(unittest.TestCase):
     def delete(self, id):
         return self.app.post(str("/delete_user/" + str(id)))
 
-    def select(self):
-        return self.app.post("/select", data=dict(car_select="Lambo"), follow_redirects = True)
+    def select(self, car):
+        return self.app.post(str("/select/" + car))
+
+    def add_vote(self, vote):
+        return self.app.post('/addCar', data = dict(text=vote), follow_redirects = True)
+    
+    def delete_vote(self, id):
+        return self.app.post(str("/delete_brand/" + str(id)), follow_redirects = True)
+    
+    def delete_user_vote(self, id):
+        return self.app.post(str("/delete_vote/" + str(id)), follow_redirects = True)
     
 #REGISTRATION FUNCTIONALITY TESTS
     #Tests a valid registration attempt
@@ -187,6 +196,30 @@ class TestCase(unittest.TestCase):
 
         response = self.login("Grae", "password")
         self.assertNotIn(b'Welcome Admin! Grae', response.data)
+
+    #user tries to access admin page directly through url
+    def test_nonadmin_url(self):
+        user = User(username="Grae", email="grae@email.com", preference="AS")
+        user.set_password('password')
+        user.admin = False
+        db.session.add(user)
+        db.session.commit()
+
+        self.login("Grae", "password")
+        response = self.app.get('/hoster', follow_redirects = True)
+        self.assertIn(b'Cannot access admin page directly', response.data)
+    
+    #admin tries to access user page directly through url
+    def test_nonuser_url(self):
+        user = User(username="Grae", email="grae@email.com", preference="AS")
+        user.set_password('password')
+        user.admin = True
+        db.session.add(user)
+        db.session.commit()
+
+        self.login("Grae", "password")
+        response = self.app.get('/index', follow_redirects = True)
+        self.assertIn(b'You are admin!', response.data)
     
     #admin delete user
     def test_delete(self):
@@ -232,6 +265,134 @@ class TestCase(unittest.TestCase):
         #check admin page for votes from user1 (id = 1)
         self.assertNotIn(b'<td class="active" value="userid">1</td>', response.data)
 
+    #admin delete admin
+    def test_delete_admin(self):
+        #create dummy users
+        user1 = User(username="user1", email="user1@email.com", preference="AS")
+        user1.set_password('password')
+        user1.admin = True
+        choice1 = Choice(chooseSeries="Lambo", UserId=1, vote=1)
+        user2 = User(username="user2", email="user2@email.com", preference="Lambo")
+        user2.set_password('password')
+        choice2 = Choice(chooseSeries="Lambo", UserId=2, vote=1)
+        user3 = User(username="user3", email="user3@email.com", preference="GTR")
+        user3.set_password('password')
+        choice3 = Choice(chooseSeries="AS", UserId=3, vote=1)
+        db.session.add(user1)
+        db.session.add(choice1)
+        db.session.add(user2)
+        db.session.add(choice2)
+        db.session.add(user3)
+        db.session.add(choice3)
+        db.session.commit()
+
+        #login as admin
+        administrator = User(username="admin", email="admin@email.com", preference="AS")
+        administrator.set_password('password')
+        administrator.admin = True
+        db.session.add(administrator)
+        db.session.commit()
+        self.login("admin", "password")
+
+        #check admin page and database for user1 (other admin)
+        response = self.app.get('/hoster', follow_redirects = True)
+        self.assertIn(b'user1', response.data)
+        self.assertTrue(User.query.get(1))
+
+        #admin attempts to delete admin user1
+        self.delete(1)
+        
+        #check admin page and database for user1
+        response = self.app.get('/hoster', follow_redirects = True)
+        self.assertIn(b'user1', response.data)
+        self.assertTrue(User.query.get(1))
+        
+    #add voting option
+    def test_add_vote(self):
+        user = User(username="Grae", email="grae@email.com", preference="AS")
+        user.set_password('password')
+        user.admin = True
+        user2 = User(username="used", email="used@email.com", preference="AS")
+        user2.set_password('password')
+        db.session.add(user)
+        db.session.add(user2)
+        db.session.commit()
+
+        #login as admin
+        self.login("Grae", "password")
+
+        #add voting option
+        response = self.add_vote("New Option")
+        self.assertIn(b'car added successfully: New Option', response.data)
+        
+        #log in as regular user
+        self.logout()
+        response = self.login("used", "password")
+
+        #check that the new voting option is visible on the user page
+        self.assertIn(b'<td type="button">New Option</td>', response.data)
+
+    #remove voting option
+    def test_remove_brand(self):
+        user = User(username="Grae", email="grae@email.com", preference="AS")
+        user.set_password('password')
+        user.admin = True
+        user2 = User(username="used", email="used@email.com", preference="AS")
+        user2.set_password('password')
+        db.session.add(user)
+        db.session.add(user2)
+        db.session.commit()
+
+        #login as admin, check "Lambo" option exists
+        self.login("Grae", "password")
+        self.assertTrue(Brand.query.filter_by(carSeries="Lambo").first())
+
+        #remove voting option, check "Lambo" option no longer exists
+        response = self.delete_vote(1)
+        self.assertIn(b'One car has been deleted', response.data)
+        self.assertFalse(Brand.query.filter_by(carSeries="Lambo").first())
+
+    #remove user vote
+    def test_remove_vote(self):
+        user1 = User(username="user1", email="user1@email.com", preference="AS")
+        user1.set_password('password')
+        choice1 = Choice(chooseSeries="Lambo", UserId=1, vote=1)
+        user2 = User(username="user2", email="user2@email.com", preference="Lambo")
+        user2.set_password('password')
+        choice2 = Choice(chooseSeries="Lambo", UserId=2, vote=1)
+        db.session.add(user1)
+        db.session.add(choice1)
+        db.session.add(user2)
+        db.session.add(choice2)
+        admin = User(username="Grae", email="grae@email.com", preference="AS")
+        admin.set_password('password')
+        admin.admin = True
+        db.session.add(choice1)
+        db.session.add(user2)
+        db.session.add(choice2)
+        db.session.add(admin)
+        db.session.commit()
+
+        #login as admin
+        response = self.login("Grae", "password")
+
+        #check that the user1 choice exists
+        self.assertIn(b'''<td class="active">user1</td>
+                <td class="active">Lambo</td>''', response.data)
+        
+        #delete user1 choice
+        response = self.delete_user_vote(1)
+        self.assertIn(b'One Vote has been deleted!', response.data)
+        self.assertNotIn(b'''<td class="active">user1</td>
+                <td class="active">Lambo</td>''', response.data)
+        self.assertFalse(Choice.query.get(1))
+        
+        #check user1 has not been deleted
+        self.assertIn(b'<td class="active">user1</td>', response.data)
+        self.assertTrue(User.query.filter_by(username="user1").first())
+
+
+
 #VOTING TESTS
     #Test vote for user that has not voted
     def test_vote(self):
@@ -239,20 +400,57 @@ class TestCase(unittest.TestCase):
         user.set_password('password')
         db.session.add(user)
         db.session.commit()
+
+        #check voting options are not clickable
+        response = self.login("user", "password")
+        self.assertIn(b'<button>Vote</button>', response.data)
+
+        #check vote confirmation on vote page
+        response = self.select("Lambo")
+        self.assertIn(b'Voted Lambo', response.data)
+
+        #check vote is added to Choice schema
+        self.assertTrue(Choice.query.filter_by(UserId = 1).first().chooseSeries == "Lambo")
+
+        #checks this vote is displayed in a table on the index page
+        response = self.app.get("/index", follow_redirects = True)
+        self.assertIn(b'''<td class="active">user</td>
+                 <td class="success">Lambo</td>
+                 <td class="warning">1</td>''', response.data)
+        
+        #checks this vote is tallied on the graph on the index page
+        self.assertIn(b'labels: [\n                "Lambo",\n                ]', response.data)
+        self.assertIn(b'data: [\n                        "1",\n                        ]', response.data)
+    
+    #Test vote for user that has already voted
+    def test_second_vote(self):
+        user = User(username="user", email="user@email.com", preference="AS")
+        user.set_password('password')
+        db.session.add(user)
+        db.session.commit()
         self.login("user", "password")
-        #self.select()
 
+        #vote once
+        self.select("Lambo")
+        response = self.app.get("/index", follow_redirects = True)
+        self.assertIn(b'current user has voted', response.data)
+        self.assertTrue(Choice.query.filter_by(UserId = 1).first().chooseSeries == "Lambo")
 
+        #check voting options are not clickable
+        self.assertIn(b'<button disabled>Vote</button>', response.data)
 
+        #vote again (accessing page directly through url)
+        self.select("GTR")
+        response = self.app.get("/index", follow_redirects = True)
 
-#CHANGES:
+        #check second vote is not added to Choice schema
+        self.assertFalse(Choice.query.filter_by(UserId = 1).first().chooseSeries == "GTR")
 
-    #<td class="active" value="userid">1</td> IN ADMIN
+        #check second vote is not added to table on index page
+        self.assertNotIn(b'''<td class="active">user</td>
+                 <td class="success">GTR</td>
+                 <td class="warning">1</td>''', response.data)
 
-    #you can access hoster page even if you're not an admin as long as you're logged in
-    #deleting vote deletes user
-    #admin page
-    #UserIDs, not usernames in admin vote list
 
     if __name__ == '__main__':
         unittest.main()
