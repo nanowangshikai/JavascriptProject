@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block content %}
+
+
+<div class="info">
+<h1>Welcome Admin! {{current_user}}</h1>
+<hr>
+
+<button onclick="createVote()" class="btn btn-info">Create Vote</button>
+<button onclick="showCarList()" class="btn btn-warning">SuperCar List</button>
+<div id="carList">
+    <table class="table table-bordered">
+    <tr>
+    </tr>
+{% for i in brand %}
+<tr>
+    <td class="active">{{i.id}}</td>
+    <td class="active">{{i.carSeries}}</td>
+    <form action="{{url_for('delete_brand', id=i.id ) }}" method="post" >
+
+    <td><button type="submit"  class="btn btn-danger" value="Delete">Delete</button></td>
+    </form>
+</tr>
+{% endfor %}
+    </table>
+</div>
+
+
+
+<div id="vote" >
+<h4>Input the car name below</h4>
+<br>
+<form action="{{url_for('addVote')}}" method="POST">
+<input name="text" value="type car name">
+<input type="submit" class="btn btn-success" value="Add">
+</form>
+</div>
+
+
+<table class="table table-condensed">
+        <caption style="text-align: center"><h1 class="text-success">User Information</h1></caption>
+    <tr>
+        <th class="success">UserId</th>
+        <th class="success">Admin</th>
+        <th class="success">UserName</th>
+        <th class="success">Email</th>
+        <th class="success">Preference</th>
+
+    </tr>
+    <tr> 
+            {% for user in users %}
+            <tr>
+                <td class="active">{{user.id}}</td>
+                <td class="active">{{user.admin}}</td>
+                <td class="active">{{user.username}}</td>
+                <td  class="active">{{user.email}}</td>
+                <td  class="active">{{user.preference}}</td>
+
+                <form action="{{url_for('delete_user', id=user.id )}}" method="post" >
+                {% if user.admin==True %}
+                <td><button type="submit"  class="btn btn-danger" value="Delete" disabled>Delete</button></td>
+                {% else %}
+                <td><button type="submit"  class="btn btn-danger" value="Delete" >Delete</button></td>
+                {% endif %}
+                </form>
+            </tr>
+            {% endfor %}
+    </tr>
+</table>
+
+<br>
+<hr>
+
+<table class="table table-condensed">
+    <caption style="text-align: center"><h1 class="text-success">User Voting List</h1></caption>
+    <tr>
+        <th class="success">UserId</th>
+        <th class="success">VoteId</th>
+        <th class="success">Name</th>
+        <th class="success">car</th>
+        <th class="success">vote</th>
+
+    </tr>
+    <tr> 
+            {% for c in choose %}
+            <tr>
+                <td class="active">{{c.UserId}}</td>
+                <td class="active">{{c.id}}</td>
+                <td class="active">{{c.user.username}}</td>
+                <td class="active">{{c.chooseSeries}}</td>
+                <td class="active">{{c.vote}}</td>
+
+
+                <form action="{{url_for('delete_vote', id=c.id )}}" method="post" >
+                {% if c.user.admin==True %}
+                <td><button type="submit"  class="btn btn-danger" value="Delete" disabled>Delete</button></td>
+                {% else %}
+                <td><button type="submit"  class="btn btn-danger" value="Delete" >Delete</button></td>
+                {% endif %}
+            </form>
+
+            </tr>
+            {% endfor %}
+    </tr>
+</table>
+
+<br>
+<br>
+<br>
+<br>
+</div>
+
+
+{% endblock %}

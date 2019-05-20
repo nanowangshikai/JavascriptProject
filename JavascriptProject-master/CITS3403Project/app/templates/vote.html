@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <div class="info">
+        <p>This is the Voting Page</p>
+        <p>Current User : {{current_user.username}}</p>
+        <p>Voted {{select}}</p>
+
+        <a href="{{ url_for('index') }}"><button>Back to Voting page</button></a>
+    </div>
+
+{% endblock %}
